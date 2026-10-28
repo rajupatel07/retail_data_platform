@@ -1,0 +1,13 @@
+{
+    "source":{
+        "connection_string":"cosmosdb-conn_str",
+        "database_name":"retail",
+        "collection_name":"sales_orders"
+    },
+    "target":{
+        "base_path":"/Volumes/retaildataplatform/bronze/raw_data/",
+        "folder":"cosmosdb_sales_orders",
+        "file_format":"json",
+        "mode":"overwrite"
+    }
+}

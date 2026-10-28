@@ -1,0 +1,13 @@
+{
+    "source":{
+        "aws_access_key_id":"aws_access_key_id",
+        "aws_secret_access_key":"aws_secret_access_key"
+    },
+    "target":{
+        "base_path":"/Volumes/retaildataplatform/bronze/raw_data/",
+        "folder":"sales",
+        "file_format":"parquet",
+        "mode":"overwrite"
+
+    }
+}
