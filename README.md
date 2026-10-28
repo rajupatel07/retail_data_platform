@@ -131,7 +131,3 @@ retail_data_platform/
 * Data-quality expectations with row-level metrics on silver tables
 * AI/BI dashboards on top of the gold star schema
 * CI/CD with automated `bundle validate`/`deploy` on pull requests
-
-## 📄 License
-
-This project is for portfolio / educational purposes.
