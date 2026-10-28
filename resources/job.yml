@@ -1,0 +1,123 @@
+resources:
+  jobs:
+    Pl_E2E_Retail_Data_Platform:
+      name: Pl_E2E_Retail_Data_Platform
+      email_notifications:
+        on_failure:
+          - rajupatel2386@gmail.com
+      schedule:
+        quartz_cron_expression: 10 0 5 * * ?
+        timezone_id: Europe/London
+        pause_status: PAUSED
+      tasks:
+        - task_key: ingest_cosmosdb
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/ingestion/Notebooks/cosmosdb_ingestion
+            base_parameters:
+              secret-scope: retail-platform-dev
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/ingestion/config/config_cosmosbd.json
+            source: WORKSPACE
+          max_retries: 2
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: false
+          environment_key: platform
+        - task_key: ingest_s3
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/ingestion/Notebooks/s3-ingestion
+            base_parameters:
+              secret-scope: retail-platform-dev
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/ingestion/config/config_s3ingest.json
+            source: WORKSPACE
+          environment_key: platform
+        - task_key: ingest_sqlserver
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/ingestion/Notebooks/sql_server_ingestion
+            base_parameters:
+              secret-scope: retail-dev-platform
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/ingestion/config/config_sqlserver.json
+            source: WORKSPACE
+          environment_key: platform
+        - task_key: bronze
+          depends_on:
+            - task_key: ingest_cosmosdb
+            - task_key: ingest_s3
+            - task_key: ingest_sqlserver
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/bronze/Notebooks/bronze
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/bronze/config/config_bronze.json
+            source: WORKSPACE
+        - task_key: silver_customers
+          depends_on:
+            - task_key: bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/silver/notebooks/b2s_customer
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/silver/config/nconf_b2s_customer.json
+            source: WORKSPACE
+        - task_key: gold_dim_customer
+          depends_on:
+            - task_key: silver_customers
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/Notebooks/dim_customer
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/config/config_dim_customer.json
+            source: WORKSPACE
+        - task_key: silver_sales
+          depends_on:
+            - task_key: bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/silver/notebooks/b2s_sales
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/silver/config/nconf_b2s_sales.json
+            source: WORKSPACE
+        - task_key: gold_dim_date
+          depends_on:
+            - task_key: silver_sales
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/Notebooks/dim_date
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/config/config_dim_date.json
+            source: WORKSPACE
+        - task_key: gold_dim_products
+          depends_on:
+            - task_key: silver_sales
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/Notebooks/dim_product
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/config/config_dim_product.json
+            source: WORKSPACE
+        - task_key: silver_sales_orders
+          depends_on:
+            - task_key: bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/silver/notebooks/b2s_sales_orders
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/silver/config/nconfig_b2s_sales_orders.json
+            source: WORKSPACE
+        - task_key: gold_fact_sales
+          depends_on:
+            - task_key: silver_sales
+            - task_key: silver_sales_orders
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/Notebooks/fact_sales
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/config/config_fact_sales.json
+            source: WORKSPACE
+        - task_key: gold_dim_order
+          depends_on:
+            - task_key: silver_sales_orders
+          notebook_task:
+            notebook_path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/Notebooks/dim_order
+            base_parameters:
+              path: /Workspace/Users/rajupatel2386@gmail.com/retail_data_platform/src/gold/config/config_dim_orders.json
+            source: WORKSPACE
+      queue:
+        enabled: true
+      environments:
+        - environment_key: platform
+          spec:
+            dependencies:
+              - pymongo==4.10.1
+            environment_version: "6"
+      performance_target: PERFORMANCE_OPTIMIZED

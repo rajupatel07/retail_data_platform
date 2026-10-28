@@ -1,0 +1,11 @@
+
+bundle:
+  name: retail_data_platform
+
+include:
+  - resources/job.yml
+
+targets:
+  dev:
+    default: true
+    mode: development
