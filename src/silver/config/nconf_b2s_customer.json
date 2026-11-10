@@ -26,7 +26,7 @@
         "lat": "double",
         "units_purchased": "long",
         "loyalty_segment": "string",
-        "last_update_ts": "timestamp"
+        "last_updated_ts": "timestamp"
     },
 
     "drop_columns": ["name_parts","customer_name","file_path"],
@@ -53,11 +53,11 @@
         "valid_to",
         "units_purchased",
         "loyalty_segment",
-        "last_update_ts"
+        "last_updated_ts"
     ],
 
     "deduplication": {
-        "enabled": True,
+        "enabled": true,
         "key_columns": ["customer_id"],
         "order_by": [{"column": "last_updated_ts","direction": "desc","nulls": "last"}]
     },
